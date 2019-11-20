@@ -1,8 +1,9 @@
 package parser;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -13,13 +14,16 @@ public class Main {
 		final Logger logger = LoggerFactory.getLogger(Main.class);
 		final ILineParser parser = new ApiCommandsLineParser();
 		final IDataStream stream = new FileStream("ApiCommands.log");
-		final BufferedWriter writer = new BufferedWriter(new FileWriter("parsed_ApiCommands.log"));
+		
+		final Socket socket = new Socket((String) null, 32774); // null indicates loopback host
+		final DataOutputStream os = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+
 		long nrOfLines = 0L;
 		
 		if (!stream.openStream()) {
 			logger.error("Couldn't open stream");
 			stream.close();
-			writer.close();
+			socket.close();
 			return;
 		}
 		Optional<String> logLine;
@@ -35,11 +39,11 @@ public class Main {
 			} catch (Exception e) {
 				logger.error("Could not parse line: {}", line);
 				stream.close();
-				writer.close();
+				socket.close();
 				throw new IllegalStateException(e);
 			}
-			writer.write(parsedLine);
-			writer.write('\n');
+			os.writeBytes(parsedLine);
+			os.writeBytes("\n");
 			
 			nrOfLines += 1L;
 			if (nrOfLines % 10000 == 0) {
@@ -47,7 +51,7 @@ public class Main {
 			}
 		}
 		stream.close();
-		writer.close();
+		socket.close();
 		logger.info("DONE! In total " + nrOfLines + " lines were parsed!");
 	}
 }
