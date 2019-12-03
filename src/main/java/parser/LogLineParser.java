@@ -2,6 +2,6 @@ package parser;
 
 import org.json.JSONObject;
 
-public interface ILineParser {
+public interface LogLineParser {
 	JSONObject parseLine(String line);
 }

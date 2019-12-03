@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
 
 import org.json.JSONObject;
 
-public class ApiCommandsLineParser implements ILineParser{
+public class ApiCommandsLineParser implements LogLineParser{
 	final private Pattern requestIdPattern = Pattern.compile("\\[(\\d+)\\]");
 	final private Pattern userPattern = Pattern.compile("User=(\\p{Alnum}+)");
 	
-	final private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("eee MMM dd HH:mm:ss zzz yyyy");
+	final private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("eee MMM d HH:mm:ss zzz yyyy");
 
 	public JSONObject parseLine(String line) {
 		final Map<String, String> result = new HashMap<>();
@@ -87,12 +87,19 @@ public class ApiCommandsLineParser implements ILineParser{
 		
 		int fileIndex = tokens[11].lastIndexOf('/');
 		result.put("file", tokens[11].substring(fileIndex + 1));
+
+		// TODO: come back to this when you understand what these params means
+//		result.put("param_1", tokens[12]);
+//		result.put("param_2", tokens[13]);
+//		result.put("param_3", tokens[14]);
+//		result.put("param_4", tokens[15]);
+//		result.put("param_5", tokens[16]);
 		
-		result.put("param_1", tokens[12]);
-		result.put("param_2", tokens[13]);
-		result.put("param_3", tokens[14]);
-		result.put("param_4", tokens[15]);
-		result.put("param_5", tokens[16]);
+		final StringBuffer params = new StringBuffer();
+		for (int i = 12; i < tokens.length; i += 1) {
+			params.append(tokens[i]);
+		}
+		result.put("other_params", params.toString());
 		
 		return result;
 	}
